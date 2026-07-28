@@ -2,7 +2,8 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import Store from 'electron-store'
-import type { AppSettings } from '../shared/types'
+import type { AppSettings, ScanRequest } from '../shared/types'
+import { startScan, abortScan } from './scanner'
 
 const store = new Store<AppSettings>({
   defaults: {
@@ -112,6 +113,27 @@ function setupIPC(): void {
         fsType: ''
       }
     }
+  })
+
+  // Scan IPC
+  ipcMain.handle('scan:start', async (_event, request: ScanRequest) => {
+    if (!mainWindow) return { items: [], cancelled: false, error: '窗口未初始化' }
+    try {
+      const result = await startScan(request, (progress) => {
+        mainWindow?.webContents.send('scan:progress', progress)
+      })
+      return result
+    } catch (err) {
+      return {
+        items: [],
+        cancelled: false,
+        error: err instanceof Error ? err.message : '扫描失败'
+      }
+    }
+  })
+
+  ipcMain.handle('scan:abort', () => {
+    abortScan()
   })
 }
 

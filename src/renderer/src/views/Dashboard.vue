@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useAppStore } from '@/stores/app'
+import { useScanStore } from '@/stores/scan'
 import {
   HardDrive,
   ScanLine,
-  Database
+  Database,
+  Square,
+  AlertCircle,
+  Ban
 } from 'lucide-vue-next'
 
 const appStore = useAppStore()
-const isScanning = ref(false)
+const scanStore = useScanStore()
 
 const systemItems = ref([
   { id: 'windows-temp', label: 'Windows Temp', enabled: true },
@@ -85,10 +89,17 @@ const totalSpace = computed(() => {
 })
 
 function startScan() {
-  isScanning.value = true
-  setTimeout(() => {
-    isScanning.value = false
-  }, 3000)
+  const enabledIds = scanCategoryGroups.value.flatMap(g =>
+    g.items.filter(item => item.enabled).map(item => item.id)
+  )
+  scanStore.startScan({
+    items: enabledIds,
+    developerMode: appStore.settings.developerMode
+  })
+}
+
+function abortScan() {
+  scanStore.abortScan()
 }
 
 const scanCategoryGroups = computed(() => {
@@ -188,17 +199,84 @@ function toggleCategory(catId: string) {
     <!-- Scan Button -->
     <div class="flex items-center gap-4">
       <button
+        v-if="!scanStore.isScanning"
         class="btn-primary text-base px-8 py-3 gap-2"
-        :disabled="isScanning"
         @click="startScan"
       >
-        <ScanLine v-if="!isScanning" :size="20" />
-        <div v-else class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        <span>{{ isScanning ? '扫描中...' : '开始扫描' }}</span>
+        <ScanLine :size="20" />
+        <span>开始扫描</span>
+      </button>
+      <button
+        v-else
+        class="btn-danger text-base px-8 py-3 gap-2"
+        @click="abortScan"
+      >
+        <Square :size="18" />
+        <span>停止扫描</span>
       </button>
       <p class="text-sm" style="color: var(--color-text-tertiary)">
         已选择 {{ totalChecked }} 个扫描项
       </p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div v-if="scanStore.progress" class="glass card p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium" style="color: var(--color-text-secondary)">
+          {{ scanStore.progress.currentItem }}
+        </span>
+        <span class="text-xs" style="color: var(--color-text-tertiary)">
+          {{ scanStore.progress.current }} / {{ scanStore.progress.total }}
+        </span>
+      </div>
+      <div class="w-full h-2 rounded-full overflow-hidden" style="background-color: var(--color-surface-hover)">
+        <div
+          class="h-full rounded-full transition-all duration-300 ease-out"
+          :style="{
+            width: scanStore.progress.total > 0
+              ? `${(scanStore.progress.current / scanStore.progress.total) * 100}%`
+              : '0%',
+            background: 'linear-gradient(135deg, var(--color-accent), #8b5cf6)'
+          }"
+        />
+      </div>
+      <p v-if="scanStore.progress.message" class="mt-2 text-xs" style="color: var(--color-text-tertiary)">
+        {{ scanStore.progress.message }}
+      </p>
+    </div>
+
+    <!-- Cancelled -->
+    <div v-if="scanStore.cancelled" class="glass card p-4 flex items-center gap-3" style="border-color: var(--color-warning);">
+      <Ban :size="18" style="color: var(--color-warning)" />
+      <span class="text-sm font-medium" style="color: var(--color-warning)">扫描已取消</span>
+    </div>
+
+    <!-- Error -->
+    <div v-if="scanStore.error" class="glass card p-4 flex items-center gap-3" style="border-color: var(--color-danger);">
+      <AlertCircle :size="18" style="color: var(--color-danger)" />
+      <span class="text-sm" style="color: var(--color-danger)">{{ scanStore.error }}</span>
+    </div>
+
+    <!-- Scan Results Summary -->
+    <div v-if="scanStore.scanItems.length > 0 && !scanStore.isScanning && !scanStore.cancelled" class="glass card p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <Database :size="18" style="color: var(--color-accent)" />
+        <h3 class="text-base font-semibold">扫描结果</h3>
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="text-center p-4 rounded-xl" style="background-color: var(--color-surface-hover)">
+          <p class="text-2xl font-bold" style="color: var(--color-accent)">{{ scanStore.formatBytes(scanStore.totalSize) }}</p>
+          <p class="text-xs mt-1" style="color: var(--color-text-tertiary)">总大小</p>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background-color: var(--color-surface-hover)">
+          <p class="text-2xl font-bold" style="color: var(--color-text-primary)">{{ scanStore.totalFiles.toLocaleString() }}</p>
+          <p class="text-xs mt-1" style="color: var(--color-text-tertiary)">文件数量</p>
+        </div>
+        <div class="text-center p-4 rounded-xl" style="background-color: var(--color-surface-hover)">
+          <p class="text-2xl font-bold" style="color: var(--color-success)">{{ scanStore.groupedItems.size }}</p>
+          <p class="text-xs mt-1" style="color: var(--color-text-tertiary)">分类数量</p>
+        </div>
+      </div>
     </div>
 
     <!-- Scan Items -->

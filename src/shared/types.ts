@@ -21,11 +21,31 @@ export interface ScanItem {
   recoverable: boolean
 }
 
+export interface ScanProgress {
+  phase: 'scanning' | 'completed' | 'error'
+  current: number
+  total: number
+  currentItem: string
+  message: string
+}
+
+export interface ScanRequest {
+  items: string[]    // scan item IDs to include
+  developerMode: boolean
+}
+
+export interface ScanResponse {
+  items: ScanItem[]
+  cancelled: boolean
+  error?: string
+}
+
 export interface ScanResult {
   totalSize: number
   totalFiles: number
   items: ScanItem[]
   scanTime: string
+  scanId: string
 }
 
 export interface AIAnalysisItem {
