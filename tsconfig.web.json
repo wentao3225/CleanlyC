@@ -16,7 +16,7 @@
     "paths": {
       "@/*": ["src/renderer/src/*"]
     },
-    "types": ["unocss/vite"]
+    "types": ["vite/client"]
   },
   "include": [
     "src/renderer/src/**/*.ts",

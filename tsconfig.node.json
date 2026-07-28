@@ -12,11 +12,10 @@
     "composite": true,
     "types": ["electron-vite/node"]
   },
-  "include": [
+    "include": [
     "src/main/**/*",
     "src/preload/**/*.d.ts",
     "src/shared/**/*",
-    "electron.vite.config.*",
-    "uno.config.*"
+    "electron.vite.config.*"
   ]
 }

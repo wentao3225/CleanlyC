@@ -3,12 +3,28 @@ import { createPinia } from 'pinia'
 import router from './router'
 import App from './App.vue'
 
-import 'uno.css'
+import './styles/tailwind.css'
 import './styles/index.css'
 
-const app = createApp(App)
+async function bootstrap() {
+  if (window.electronAPI) {
+    try {
+      const settings = await window.electronAPI.settings.get()
+      const theme = settings.theme === 'system'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : settings.theme
+      document.documentElement.classList.toggle('dark', theme === 'dark')
+    } catch {
+      document.documentElement.classList.add('dark')
+    }
+  } else {
+    document.documentElement.classList.add('dark')
+  }
 
-app.use(createPinia())
-app.use(router)
+  const app = createApp(App)
+  app.use(createPinia())
+  app.use(router)
+  app.mount('#app')
+}
 
-app.mount('#app')
+bootstrap()
