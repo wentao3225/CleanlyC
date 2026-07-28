@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import type { AppSettings, DiskInfo } from '../../../../shared/types'
+import type { AppSettings, DiskInfo } from '../../../shared/types'
 
 export const useAppStore = defineStore('app', () => {
   const settings = ref<AppSettings>({

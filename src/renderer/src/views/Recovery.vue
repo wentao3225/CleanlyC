@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { RecoveryRecord } from '../../../../shared/types'
+import type { RecoveryRecord } from '../../../shared/types'
 import {
   RotateCcw,
   Trash2,
@@ -35,7 +35,7 @@ function restoreRecord(record: RecoveryRecord) {
 }
 
 function deletePermanently(record: RecoveryRecord) {
-  records.value = records.value.filter(r => r.id !== record.id)
+  records.value = records.value.filter((r: RecoveryRecord) => r.id !== record.id)
 }
 </script>
 

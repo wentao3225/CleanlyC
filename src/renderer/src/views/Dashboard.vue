@@ -1,47 +1,14 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useAppStore } from '@/stores/app'
-import type { ScanCategory } from '@/types'
 import {
   HardDrive,
   ScanLine,
-  Database,
-  Sparkles
+  Database
 } from 'lucide-vue-next'
 
 const appStore = useAppStore()
 const isScanning = ref(false)
-
-const scanCategories = ref<ScanCategory[]>([
-  {
-    id: 'system',
-    name: '系统',
-    icon: 'i-lucide-monitor',
-    group: 'system',
-    enabled: true
-  },
-  {
-    id: 'browser',
-    name: '浏览器',
-    icon: 'i-lucide-globe',
-    group: 'browser',
-    enabled: true
-  },
-  {
-    id: 'software',
-    name: '软件',
-    icon: 'i-lucide-package',
-    group: 'software',
-    enabled: true
-  },
-  {
-    id: 'files',
-    name: '文件',
-    icon: 'i-lucide-folder-open',
-    group: 'files',
-    enabled: true
-  }
-])
 
 const systemItems = ref([
   { id: 'windows-temp', label: 'Windows Temp', enabled: true },
@@ -168,16 +135,6 @@ function toggleCategory(catId: string) {
 
 <template>
   <div class="space-y-8">
-    <!-- AI Detection Header -->
-    <div v-if="false" class="glass card p-6">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--color-accent), #8b5cf6)">
-          <Sparkles :size="18" color="white" />
-        </div>
-        <h2 class="text-lg font-semibold">AI 检测报告</h2>
-      </div>
-    </div>
-
     <!-- Disk Info Card -->
     <div class="glass card p-6">
       <div class="flex items-center gap-3 mb-5">
